@@ -1,4 +1,8 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This is the provided NumberTriangle class to be used in this coding task.
@@ -88,8 +92,17 @@ public class NumberTriangle {
      *
      */
     public int retrieve(String path) {
-        // TODO implement this method
-        return -1;
+        NumberTriangle curr = this;
+        for (int i = 0; i < path.length(); i++) {
+            char step = path.charAt(i);
+            if (step == 'l') {
+                curr = curr.left;
+            } else if (step == 'r') {
+                curr = curr.right;
+            }
+        }
+
+        return curr.getRoot();
     }
 
     /** Read in the NumberTriangle structure from a file.
@@ -109,25 +122,42 @@ public class NumberTriangle {
         InputStream inputStream = NumberTriangle.class.getClassLoader().getResourceAsStream(fname);
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
+        List<List<Integer>> rows = new ArrayList<>();
 
-        // TODO define any variables that you want to use to store things
-
-        // will need to return the top of the NumberTriangle,
-        // so might want a variable for that.
-        NumberTriangle top = null;
-
-        String line = br.readLine();
-        while (line != null) {
-
-            // remove when done; this line is included so running starter code prints the contents of the file
-            System.out.println(line);
-
-            // TODO process the line
-
-            //read the next line
-            line = br.readLine();
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] parts = line.trim().split("\\s+");
+            List<Integer> nums = new ArrayList<>();
+            for (String p : parts) {
+                nums.add(Integer.parseInt(p));
+            }
+            rows.add(nums);
         }
         br.close();
+
+        List<List<NumberTriangle>> nodeRows = new ArrayList<>();
+        for (List<Integer> row : rows) {
+            List<NumberTriangle> nodeRow = new ArrayList<>();
+            for (int val : row) {
+                nodeRow.add(new NumberTriangle(val));
+            }
+            nodeRows.add(nodeRow);
+        }
+
+        for (int r = 0; r < nodeRows.size() - 1; r++) {
+            List<NumberTriangle> currentRow = nodeRows.get(r);
+            List<NumberTriangle> nextRow = nodeRows.get(r + 1);
+
+            for (int c = 0; c < currentRow.size(); c++) {
+                NumberTriangle node = currentRow.get(c);
+                node.left = nextRow.get(c);
+                node.right = nextRow.get(c + 1);
+            }
+        }
+        br.close();
+
+        NumberTriangle top;
+        top = nodeRows.get(0).get(0);
         return top;
     }
 
@@ -142,3 +172,4 @@ public class NumberTriangle {
         System.out.println(mt.getRoot());
     }
 }
+
